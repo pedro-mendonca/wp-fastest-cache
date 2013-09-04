@@ -1,7 +1,7 @@
 === WP Fastest Cache ===
 Contributors: emrevona
 Donate link: http://profiles.wordpress.org/emrevona/
-Tags: fastest wp cache, cache, caching, performance, wp-cache, plugin, page, optimize, fast, w3 total cache, apache, wp fast cache, google, mod_rewrite, accelerator, google rank, htaccess, quick cache, super cache, w3 total cache, minify
+Tags: fastest wp cache, cache, fastest, caching, performance, wp-cache, plugin, page, optimize, fast, w3 total cache, apache, wp fast cache, google, mod_rewrite, accelerator, google rank, htaccess, quick cache, super cache, w3 total cache, minify
 Requires at least: 3.3
 Tested up to: 3.6
 Stable tag: 4.3
