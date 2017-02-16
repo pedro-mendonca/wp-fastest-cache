@@ -183,7 +183,8 @@
 		}
 
 		public function addJavaScript(){
-			wp_enqueue_script("wpfc-jquery-ui", plugins_url("wp-fastest-cache/js/jquery-ui.min.js"), array(), time(), false);
+			wp_enqueue_script("jquery-ui-draggable");
+			wp_enqueue_script("jquery-ui-position");
 			wp_enqueue_script("wpfc-dialog", plugins_url("wp-fastest-cache/js/dialog.js"), array(), time(), false);
 			wp_enqueue_script("wpfc-dialog-new", plugins_url("wp-fastest-cache/js/dialog_new.js"), array(), time(), false);
 
@@ -548,6 +549,7 @@
 					$trailing_slash_rule.
 					"RewriteCond %{QUERY_STRING} !.+"."\n".$loggedInUser.
 					"RewriteCond %{HTTP:Cookie} !comment_author_"."\n".
+					"RewriteCond %{HTTP:Cookie} !safirmobilswitcher=mobil"."\n".
 					'RewriteCond %{HTTP:Profile} !^[a-z0-9\"]+ [NC]'."\n".$mobile;
 			
 
@@ -756,6 +758,7 @@
 			$wpFastestCacheTimeOut = isset($this->cronJobSettings["period"]) ? $this->cronJobSettings["period"] : "";
 
 			$wpFastestCacheUpdatePost = isset($this->options->wpFastestCacheUpdatePost) ? 'checked="checked"' : "";
+			$wpFastestCacheWidgetCache = isset($this->options->wpFastestCacheWidgetCache) ? 'checked="checked"' : "";
 			?>
 			
 			<div class="wrap">
@@ -769,38 +772,12 @@
 						$tabs = array(array("id"=>"wpfc-options","title"=>"Settings"),
 									  array("id"=>"wpfc-deleteCache","title"=>"Delete Cache"),
 									  array("id"=>"wpfc-cacheTimeout","title"=>"Cache Timeout"));
-
-						if(class_exists("WpFastestCacheImageOptimisation")){
-						}
-							array_push($tabs, array("id"=>"wpfc-imageOptimisation","title"=>"Image Optimization"));
 						
+						array_push($tabs, array("id"=>"wpfc-imageOptimisation","title"=>"Image Optimization"));
 						array_push($tabs, array("id"=>"wpfc-premium","title"=>"Premium"));
-
 						array_push($tabs, array("id"=>"wpfc-exclude","title"=>"Exclude"));
-
 						array_push($tabs, array("id"=>"wpfc-cdn","title"=>"CDN"));
-
-
-
-
-
-						$tester_arr_db = array(
-									"tr-TR",
-									"berkatan.com",
-									"yenihobiler.com",
-									"hobiblogu.com",
-									"modafikirleri.com",
-									"pamsenfashion.com",
-									"gingerdomain.com",
-									"pamsen.com"
-									);
-
-						if(in_array(get_bloginfo('language'), $tester_arr_db) || in_array(str_replace("www.", "", $_SERVER["HTTP_HOST"]), $tester_arr_db)){
-							array_push($tabs, array("id"=>"wpfc-db","title"=>"DB"));
-						}
-
-
-
+						array_push($tabs, array("id"=>"wpfc-db","title"=>"DB"));
 
 						foreach ($tabs as $key => $value){
 							$checked = "";
@@ -827,6 +804,23 @@
 								<div class="question">Cache System</div>
 								<div class="inputCon"><input type="checkbox" <?php echo $wpFastestCacheStatus; ?> id="wpFastestCacheStatus" name="wpFastestCacheStatus"><label for="wpFastestCacheStatus">Enable</label></div>
 							</div>
+
+
+							<?php
+
+							$tester_arr = array(
+											"berkatan.com",
+											);
+														
+							if(in_array(get_bloginfo('language'), $tester_arr) || in_array(str_replace("www.", "", $_SERVER["HTTP_HOST"]), $tester_arr)){ ?>
+								<div class="questionCon">
+									<div class="question">Widget Cache</div>
+									<div class="inputCon"><input type="checkbox" <?php echo $wpFastestCacheWidgetCache; ?> id="wpFastestCacheWidgetCache" name="wpFastestCacheWidgetCache"><label for="wpFastestCacheWidgetCache">Reduce the number of SQL queries</label></div>
+								</div>
+							<?php } ?>
+
+
+
 							
 							<div class="questionCon">
 								<div class="question">Preload</div>
@@ -1060,7 +1054,8 @@
 											"polyamory.dating",
 											"mygamer.com",
 											"gingerdomain.com",
-											"topclassprinting.com"
+											"topclassprinting.com",
+											"camilazivit.com.br"
 											);
 														
 							if(in_array(get_bloginfo('language'), $tester_arr) || in_array(str_replace("www.", "", $_SERVER["HTTP_HOST"]), $tester_arr)){ ?>
@@ -1443,20 +1438,14 @@
 				    			</div>
 				    			<div class="wpfc-premium-step-footer">
 				    				<?php
-				    					$svn_price_arr = wp_remote_get("http://plugins.svn.wordpress.org/wp-fastest-cache/assets/price.html", 5);
-
-				    					if ( !$svn_price_arr || is_wp_error( $svn_price_arr ) ) {
-				    						$premium_price = $svn_price_arr->get_error_message();
+				    					if(get_bloginfo('language') == "tr-TR"){
+				    						$premium_price = "100TL";
 				    					}else{
-				    						if(wp_remote_retrieve_response_code($svn_price_arr) == 200){
-				    							$premium_price = wp_remote_retrieve_body( $svn_price_arr );
-					    					}else{
-					    						$premium_price = "Error";
-					    					}
+					    					$premium_price = "$39.99";
 				    					}
 
 				    				?>
-				    				<h1 style="float:left;" id="just-h1">Just</h1><h1>$<span id="wpfc-premium-price"><?php echo $premium_price; ?></span></h1>
+				    				<h1 style="float:left;" id="just-h1">Just</h1><h1><span style="margin-left:5px;" id="wpfc-premium-price"><?php echo $premium_price; ?></span></h1>
 				    				<p>The download button will be available after paid. You can buy the premium version now.</p>
 
 				    				<?php if(!preg_match("/Caiu\s*Na/i", get_bloginfo("name")) && !preg_match("/caiuna/i", $_SERVER["HTTP_HOST"]) && !preg_match("/\.ir$/i", $_SERVER["HTTP_HOST"])){ ?>
@@ -1496,52 +1485,11 @@
 
 
 				    				<?php if(class_exists("WpFastestCachePowerfulHtml")){ ?>
-					    				<button id="wpfc-update-premium-button" class="wpfc-btn primaryDisableCta" style="width:200px;">
-					    					<span data-type="update">Update</span>
-					    				</button>
-					    				<script type="text/javascript">
-					    					jQuery(document).ready(function(){
-									    		wpfc_premium_page();
-
-									    		function wpfc_premium_page(){
-										    		jQuery(document).ready(function(){
-						    							Wpfc_Premium.check_update("<?php echo $this->get_premium_version(); ?>", '<?php echo "http://api.wpfastestcache.net/premium/newdownload/".str_replace(array("http://", "www."), "", $_SERVER["HTTP_HOST"])."/".get_option("WpFc_api_key"); ?>', '<?php echo plugins_url('wp-fastest-cache/templates'); ?>');
-
-														var counter = 0;
-														var looper = setInterval(function(){
-														    counter++;
-
-														    if(counter >= 4){
-														        clearInterval(looper);
-														    }
-
-														    if(jQuery("#wpfc-update-premium-button").attr("class") == "wpfc-btn primaryCta"){
-														    	clearInterval(looper);
-														    	
-							    								if(jQuery("div[id^='wpfc-modal-updatenow-']").length === 0){
-							    									Wpfc_New_Dialog.dialog("wpfc-modal-updatenow", {close: function(){
-																		Wpfc_New_Dialog.clone.find("div.window-content input").each(function(){
-																			if(jQuery(this).attr("checked")){
-																				var id = jQuery(this).attr("action-id");
-																				jQuery("div.tab1 div[template-id='wpfc-modal-updatenow'] div.window-content input#" + id).attr("checked", true);
-																			}
-																		});
-
-																		Wpfc_New_Dialog.clone.remove();
-																	}});
-
-																	Wpfc_New_Dialog.show_button("close");
-																}
-							    							}
-
-														}, 1000);
-										    		});
-									    		}
-					    					});
-					    				</script>
-					    				<script type="text/javascript">
-
-					    				</script>
+				    					<a href="http://www.wpfastestcache.com/blog/premium-update-before-v1-3-6/">
+						    				<button id="wpfc-update-premium-button" class="wpfc-btn primaryDisableCta" style="width:200px;">
+						    					<span data-type="update">Update</span>
+						    				</button>
+				    					</a>
 				    				<?php }else{ ?>
 					    				<button class="wpfc-btn primaryCta" id="wpfc-download-premium-button" class="wpfc-btn primaryDisableCta" style="width:200px;">
 					    					<span data-type="download">Download</span>
@@ -1928,34 +1876,6 @@
 			</div>
 
 			<div class="omni_admin_sidebar">
-				<?php
-					$ads_source = wp_remote_get("http://plugins.svn.wordpress.org/wp-fastest-cache/assets/ads/source.json", 5);
-
-					if ( !$ads_source || is_wp_error( $ads_source ) ) {
-						//toDo
-					}else{
-						if(wp_remote_retrieve_response_code($ads_source) == 200){
-							$json = wp_remote_retrieve_body($ads_source);
-
-							if($json){
-								$std = json_decode($json);
-
-								?>
-								<?php if($std->visible == "true"){ ?>
-									<div style="padding:0 !important;float:left;">
-										<a href="<?php echo $std->link; ?>" target="_blank">
-											<img src="<?php echo $std->image; ?>" border="0" alt="" width="222" height="220"/>
-										</a>
-									</div>
-								<?php } ?>
-								<?php
-							}
-    					}
-					}
-
-				?>
-
-
 				<div class="omni_admin_sidebar_section" id="vote-us">
 					<h3 style="color: antiquewhite;">Rate Us</h3>
 					<ul>

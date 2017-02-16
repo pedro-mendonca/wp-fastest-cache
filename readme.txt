@@ -3,8 +3,8 @@ Contributors: emrevona
 Donate link: http://profiles.wordpress.org/emrevona/
 Tags: cache, performance, wp-cache, total cache, super cache
 Requires at least: 3.3
-Tested up to: 4.7
-Stable tag: 4.7
+Tested up to: 4.7.2
+Stable tag: 0.8.6.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,15 +97,30 @@ Wpfc does not support Wordpress Multisite yet.
 15. Enter CDN Information
 16. File Types
 17. Specify Sources
+18. Database Cleanup
 
 == Changelog ==
+
+= 0.8.6.6 =
+* to make compatible with the new rules of wordpress
+* <strong>[FEATURE]</strong> Database Cleanup
+* to decode URLs in non-latin languages for singleDeleteCache()
+* to change the method of the premium update <a href="http://www.wpfastestcache.com/blog/premium-update-before-v1-3-6/">Details</a>
+
+= 0.8.6.5 =
+* <strong>[FEATURE]</strong> Compatible with GTranslate
+* to exclude avada-dynamic-css-css for css optimizations
+* to compatible with Safir Mobile theme
+* to update htaccess after activation
+* <strong>[FEATURE]</strong> Compatible with Caldera Forms
+* to prevent 404 errors for non-existent minified files
+* to clear the cache of post cats and the cache of post tags after update post
 
 = 0.8.6.4 =
 * <strong>[FEATURE]</strong> Compatible with kk Star Ratings
 * to add aac, mp3, ogg extension for CDN
 * to serve wp-emoji-release.min.js via cdn if CDN integration has been added
 * not to show the cache for comment authors
-* <strong>[FEATURE]</strong> Database Cleanup
 * to show how to enable gzip warning for Nginx
 * to fix the check cdn-url issue which is cURL error 6: Couldn't resolve host 
 * to check http_response_code is 503 or not if DONOTCACHEPAGE is set
@@ -209,7 +224,6 @@ Wpfc does not support Wordpress Multisite yet.
 * WAP-Browser has been added into mobile user agent list
 * to prevent 404 error for wpfc-minified after clearing minified files
 * <strong>[FEATURE]</strong> to add any cdn provider
-* <strong>[FEATURE]</strong> WPFC_DELETE_ALL_CACHE_AFTER_UPDATE has been added
 * to prevent from xss attacks (Brendon Boshell)
 * to clear the cache of homepage after update static page
 * to clear the cache of homepage after update sticky page

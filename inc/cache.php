@@ -14,8 +14,6 @@
 			
 			$this->options = $this->getOptions();
 
-			$this->checkActivePlugins();
-
 			$this->set_cdn();
 
 			$this->set_cache_file_path();
@@ -34,7 +32,7 @@
 
 				if(isset($hide_my_wp["new_content_path"]) && $hide_my_wp["new_content_path"]){
 					$hide_my_wp["new_content_path"] = trim($hide_my_wp["new_content_path"], "/");
-					$content_url = str_replace("wp-content", $hide_my_wp["new_content_path"], $content_url);
+					$content_url = str_replace(basename(WPFC_WP_CONTENT_DIR), $hide_my_wp["new_content_path"], $content_url);
 				}
 			}
 
@@ -45,7 +43,7 @@
 				if(isset($wph_settings["module_settings"])){
 					if(isset($wph_settings["module_settings"]["new_content_path"]) && $wph_settings["module_settings"]["new_content_path"]){
 						$wph_settings["module_settings"]["new_content_path"] = trim($wph_settings["module_settings"]["new_content_path"], "/");
-						$content_url = str_replace("wp-content", $wph_settings["module_settings"]["new_content_path"], $content_url);
+						$content_url = str_replace(basename(WPFC_WP_CONTENT_DIR), $wph_settings["module_settings"]["new_content_path"], $content_url);
 					}
 				}
 			}
@@ -80,20 +78,11 @@
 				}else{
 					$this->cacheFilePath = $this->getWpContentDir()."/cache/all/".$_SERVER["REQUEST_URI"];
 				}
-
-				// qTranslate: in name.com/de REQUEST_URI is "/" instead of "/de" so need to check it
-				// if(isset($_SERVER["HTTP_COOKIE"]) && $_SERVER["HTTP_COOKIE"]){
-				// 	if(preg_match("/qtrans/i", $_SERVER["HTTP_COOKIE"])){
-				// 		if(isset($_SERVER["REDIRECT_URL"]) && $_SERVER["REDIRECT_URL"]){
-				// 			$this->cacheFilePath = $this->getWpContentDir()."/cache/all".$_SERVER["REDIRECT_URL"];
-				// 		}
-				// 	}
-				// }
-
-				//     [HTTP_COOKIE] => qtrans_front_language=en; _ga=GA1.2.1550945439.1457456694; _gat_awxoapTracker=1
 			}
 
 			$this->cacheFilePath = $this->cacheFilePath ? rtrim($this->cacheFilePath, "/")."/" : "";
+			$this->cacheFilePath = str_replace("/cache/all//", "/cache/all/", $this->cacheFilePath);
+
 
 			if(strlen($_SERVER["REQUEST_URI"]) > 1){ // for the sub-pages
 				if(!preg_match("/\.html/i", $_SERVER["REQUEST_URI"])){
@@ -105,7 +94,15 @@
 						//toDo
 					}
 				}
-			} 
+			}
+
+			if(isset($_COOKIE) && isset($_COOKIE['safirmobilswitcher'])){
+				if($_COOKIE['safirmobilswitcher'] == "mobil"){
+					$this->cacheFilePath = str_replace("/cache/all/", "/cache/wpfc-mobile-cache/", $this->cacheFilePath);
+				}else if($_COOKIE['safirmobilswitcher'] == "masaustu"){
+					$this->cacheFilePath = str_replace("/cache/wpfc-mobile-cache/", "/cache/all/", $this->cacheFilePath);
+				}
+			}
 		}
 
 		public function set_cdn(){
@@ -137,15 +134,6 @@
 			}
 		}
 
-		public function checkActivePlugins(){
-			//for WP-Polls
-			if($this->isPluginActive('wp-polls/wp-polls.php')){
-				require_once "wp-polls.php";
-				$wp_polls = new WpPollsForWpFc();
-				$wp_polls->execute();
-			}
-		}
-
 		public function checkShortCode($content){
 			if(preg_match("/\[wpfcNOT\]/", $content)){
 				if(!is_home() || !is_archive()){
@@ -162,7 +150,7 @@
 				if(isset($this->options->wpFastestCacheLoggedInUser) && $this->options->wpFastestCacheLoggedInUser == "on"){
 					// to check logged-in user
 					foreach ((array)$_COOKIE as $cookie_key => $cookie_value){
-						if(preg_match("/wordpress_logged_in|wp_woocommerce_session/i", $cookie_key)){
+						if(preg_match("/wordpress_logged_in/i", $cookie_key)){
 							return 0;
 						}
 					}
@@ -696,22 +684,6 @@
 			}elseif($extension == "html"){
 				$this->err = "Buffer is empty so the cache cannot be created";
 			}
-		}
-
-		public function replaceLink($search, $replace, $content){
-			$href = "";
-
-			if(stripos($search, "<link") === false){
-				$href = $search;
-			}else{
-				preg_match("/.+href=[\"\'](.+)[\"\'].+/", $search, $out);
-			}
-
-			if(count($out) > 0){
-				$content = preg_replace("/<link[^>]+".preg_quote($out[1], "/")."[^>]+>/", $replace, $content);
-			}
-
-			return $content;
 		}
 
 		public function is_amp($content){
